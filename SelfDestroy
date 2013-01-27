@@ -1,0 +1,22 @@
+#pragma strict
+//////Script for GGJ13 by Rosa(rosa89n20@gmail.com)//////
+////////////////////////SelfDestroy//////////////////////
+////////////////////aka ParticleCrasher//////////////////
+
+var particleArray=new ParticleEmitter[4];  //Set Up Array of Particle Emitter	//宣告粒子發射器陣列
+
+var selfDestroyCountdown:int=20;	//Set Up Countdown Time for Self Destroy	//設定自毀倒數
+
+function Start () 
+{
+	yield WaitForSeconds(selfDestroyCountdown*0.2);	//Pre Wait for Turn Off Particle Emitter	//預先等待粒子發射器關閉
+	
+	for(var p=0;p<particleArray.Length;p++)
+	{
+		particleArray[p].emit=false;	//Turn Off Particle Emitter	//關閉陣列成員的粒子發射器
+	}
+	
+	yield WaitForSeconds(selfDestroyCountdown*0.8);	//Wait for Destroy	//等待自毀
+	
+	Destroy(gameObject);
+}
