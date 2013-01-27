@@ -1,0 +1,262 @@
+#pragma strict
+//////Script for GGJ13 by Rosa(rosa89n20@gmail.com)//////
+////////////////////HeartbeatController//////////////////
+/////////////////aka HeartbeatEffectManager//////////////
+
+//====Pitch Setting====//
+//====音調設定====//
+public var pitchUpLevel:float=3;  //Pitch Increase to Level	//音調提高等級
+public var increaseValue:float=0.5;	//Value of Increase	//提高係數
+
+public var pitchDownLevel:float=0.2;	//Pitch Decrease to Level	//音調降低等級
+public var decreaseValue:float=0.3;	//Value of Decrease	//降低細數
+
+public var heartbeat:float=1;	//Current Level of Heartbeat	//當前心跳等級
+
+private var increaseSwitcher:boolean=false;	//Switcher of Increase Function	//音調提高程式的開關
+private var decreaseSwitcher:boolean=false;	//Switcher of Decrease Function	//音調降低程式的開關
+
+//====Get Screen Size====//
+//====獲取螢幕解析度====//
+private var sw:float;
+private var sh:float;
+
+//====Blood Screen Setting====//
+//====血絲畫面設定====//
+var tgtCamera:Camera;	//Set Camera	//設定攝影機
+
+var bloodScreen:Texture;	//Set Blood Screen Texture	//設定血絲畫面貼圖
+
+private var axisx:float;	//Set Texture Axis	//設定貼圖軸心
+private var axisy:float;
+
+private var bloodScreenW:float;	//Set Texture Size	//設定貼圖大小
+private var bloodScreenH:float;
+
+private var bouncingSwitcher:boolean=false;	//Switcher of Bouncing Effect	//彈跳效果的開關
+private var bounceReturn:boolean=false;
+
+var textureScaleMax:float=1.5;	//Max Value of Texture Bouncing	//彈跳效果中貼圖的最大縮放數值
+var textureScaleMin:float=1;	//Min Value of Texture Bouncing	//彈跳效果中貼圖的最小縮放數值
+var bouncingValue:float=100;	//Basic Value of Bouncing	//彈跳效果的基礎數值
+var bouncingScale:float=20;	//Scale of Bounce Value	//彈跳效果的縮放數值
+var textureShakeValue:float=5;	//Basic Value of Shaking Effect	//晃動效果的基礎數值
+private var ts:float=0; //Current Shaking Value	//當前晃動係數
+var bloodScreenAlpha:Color=Color(1,1,1,0);	//Current Color Value of Texture	//當前貼圖的顏色數據
+var alphaScale:float=28.5714;	//Scale of Alpha Value	//貼圖透明通道的縮放數值
+var pitchTackScale:float=5;	//Scale of Bouncing Effect and Fading Effect	//彈跳效果與淡入淡出效果的縮放數值
+
+//====Basic Value Set Up====//
+//====基礎數值設置====//
+function Start () 
+{
+	sw=Screen.width;
+	sh=Screen.height;
+	
+	axisx=sw*0.5;
+	axisy=sh*0.5;
+	
+	bloodScreenW=sw;
+	bloodScreenH=sh;
+
+	audio.playOnAwake=false;
+	audio.loop=true;
+}
+
+function Update () 
+{
+	//====Update Screen Size====//
+	//====如果解析度變動將再次更新====//
+	if(sw!=Screen.width || sh!=Screen.height)
+	{
+		sw=Screen.width;
+		sh=Screen.height;
+		
+		axisx=sw*0.5;
+		axisy=sh*0.5;
+		
+		bloodScreenW=sw;
+		bloodScreenH=sh;
+	}
+	
+	//====Bouncing Effect and Fading Effect====//
+	//====血絲貼圖彈跳效果與淡入淡出效果====//
+	if(bouncingSwitcher && bounceReturn)	//Start Bouncing Effect	//開始彈跳效果與淡入淡出效果
+	{
+	ts=Random.Range(-textureShakeValue,textureShakeValue);
+	
+	bloodScreenAlpha.a+=alphaScale*Time.deltaTime;	//Increase Alpha Value Per Second	//每秒提高透明度數值
+	
+	bloodScreenW+=(bouncingValue*bouncingScale)*Time.deltaTime;
+	bloodScreenH+=(bouncingValue*bouncingScale)*Time.deltaTime;
+		if(bloodScreenW>=sw*textureScaleMax || bloodScreenH>=sh*textureScaleMax)
+		{
+			bounceReturn=false;
+		}
+		if(bloodScreenAlpha.a>=1)
+		{
+			bloodScreenAlpha.a=1;
+		}
+	}
+	
+	if(!bounceReturn)	//Return Bouncing Effect	//返回彈跳效果
+	{
+	ts=Random.Range(-textureShakeValue,textureShakeValue);
+	
+	bloodScreenAlpha.a-=alphaScale*Time.deltaTime;	//Decrease Alpha Value Per Second	//每秒降低透明度數值
+	
+	bloodScreenW-=(bouncingValue*bouncingScale)*Time.deltaTime;
+	bloodScreenH-=(bouncingValue*bouncingScale)*Time.deltaTime;
+		if(bloodScreenW<=sw*textureScaleMin || bloodScreenH<=sh*textureScaleMin)
+		{
+			bounceReturn=true;
+		}
+		if(bloodScreenAlpha.a<=0)
+		{
+			bloodScreenAlpha.a=0;
+		}
+	}
+	
+	//====Heartbeat Effect====//
+	//====心跳效果====//
+	audio.pitch=heartbeat;
+	if(increaseSwitcher)	//Increase Heartbeat Pitch and Decrease FOV of Main Camera	//提高心跳音調與降低視角
+	{
+		var hu:float=increaseValue*Time.deltaTime;
+		heartbeat+=hu;
+		if(heartbeat>=pitchUpLevel)
+		{
+			heartbeat=pitchUpLevel;
+		}
+		
+		bouncingScale+=pitchTackScale*Time.deltaTime;
+		alphaScale+=pitchTackScale*Time.deltaTime;
+		if(bouncingScale>=60 || alphaScale>=60)
+		{
+			bouncingScale=60;
+			alphaScale=60;
+		}
+		
+		Camera.main.fieldOfView+=10*Time.deltaTime;
+		if(Camera.main.fieldOfView>=100)
+		{
+			Camera.main.fieldOfView=100;
+		}
+	}
+	
+	if(decreaseSwitcher)	//Decrease Heartbeat Pitch	//降低心跳音調
+	{
+		var hd:float=decreaseValue*Time.deltaTime;
+		heartbeat-=hd;		
+		if(heartbeat<=pitchDownLevel)
+		{
+			heartbeat=pitchDownLevel;
+		}
+		
+		bouncingScale-=pitchTackScale*Time.deltaTime;
+		alphaScale-=pitchTackScale*Time.deltaTime;
+		if(bouncingScale<=2 || alphaScale<=2)
+		{
+			bouncingScale=2;
+			alphaScale=2;
+		}
+		
+		Camera.main.fieldOfView-=10*Time.deltaTime;
+		if(Camera.main.fieldOfView<=60)
+		{
+			Camera.main.fieldOfView=60;
+		}
+	}
+	
+	if(!increaseSwitcher && !decreaseSwitcher)
+	{
+		heartbeat=1;
+	}
+}
+
+//====Rendering Blood Screen Texture====//
+//====渲染血絲貼圖====//
+function OnGUI ()
+{
+	GUI.BeginGroup(Rect(0,0,sw,sh));
+	if(bouncingSwitcher)
+	{
+	//Fading Effect	//淡入淡出效果
+	GUI.color.a=bloodScreenAlpha.a;
+	GUI.DrawTexture(Rect((axisx-bloodScreenW*0.5)+ts,(axisy-bloodScreenH*0.5)+ts,bloodScreenW,bloodScreenH),bloodScreen,ScaleMode.StretchToFill,true,0);
+	}
+	else
+	{
+	GUI.color.a=0;
+	}
+	GUI.EndGroup();	
+}
+
+//====Reset Bouncing Effect====//
+//====重設彈跳效果====//
+function ResetBouncing ()
+{
+	bloodScreenW=sw;
+	bloodScreenH=sh;
+	ts=0;
+	bouncingScale=20;
+	alphaScale=28.5714;
+}
+
+//====Start Bouncing Effect====//
+//====開啟血絲貼圖彈跳程式====//
+function BloodScreenBouncing ()
+{
+	bouncingSwitcher=true;
+}
+
+//====Start Heartbeat====//
+//====開啟心跳====//
+public function TurnOnTheRadio ()
+{
+	audio.Play();
+	BloodScreenBouncing();
+}
+
+//====Close Heartbeat====//
+//====關閉心跳====//
+public function TurnOffTheRadio ()
+{
+	audio.Stop();
+	ResetRadio();
+	bouncingSwitcher=false;
+	ResetBouncing();
+	increaseSwitcher=false;
+	decreaseSwitcher=false;
+	Camera.main.fieldOfView=60;
+}
+
+//====Increase the Pitch====//
+//====心跳音調提高====//
+public function SoundIncrease ()
+{
+	if(bouncingSwitcher)
+	{
+		increaseSwitcher=true;
+		decreaseSwitcher=false;
+	}
+}
+
+//====Decrease the Pitch====//
+//====心跳音調降低====//
+public function SoundDecrease ()
+{
+	if(bouncingSwitcher)
+	{
+		increaseSwitcher=false;
+		decreaseSwitcher=true;
+	}
+}
+
+//====Reset Pitch====//
+//====重設心跳音調====//
+public function ResetRadio ()
+{
+	heartbeat=1;
+	audio.pitch=heartbeat;
+}
