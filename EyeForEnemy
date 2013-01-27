@@ -1,0 +1,73 @@
+#pragma strict
+//////Script for GGJ13 by Rosa(rosa89n20@gmail.com)//////
+//////////////////////EyeForEnemy////////////////////////
+//////////////////aka TextureArranger////////////////////
+
+var efeMax:int=10;  //Max Number of Texture	//貼圖的上限數值
+var efe:int=0;	//Current Number of Texture	//當前貼圖數量
+
+var efeTexture:Texture;	//Texture of Target	//目標貼圖
+
+var efeW:float=100;	//Texture Width	//貼圖寬度
+var efeH:float=100;	//Texture Height	//貼圖高度
+
+private var windowsW:float;	//Width of Texture Frame	//貼圖框架的寬度
+
+//====Get Screen Size====//
+//====獲取螢幕解析度====//
+private var sw:float;
+private var sh:float;
+private var axisx:float;
+private var axisy:float;
+
+function Update () 
+{
+	//====Increase the Number of Texture====//
+	//====增加貼圖數量====//
+	if(Input.GetKeyDown(KeyCode.Space))
+	{
+		efe++;
+		if(efe>=efeMax)
+		{
+			efe=efeMax;
+		}
+	}
+	
+	//====Decrease the Number of Texture====//
+	//====減少貼圖數量====//
+	if(Input.GetKeyDown(KeyCode.LeftShift))
+	{
+		efe--;
+		if(efe<=0)
+		{
+			efe=0;
+		}
+	}
+
+	sw=Screen.width;
+	sh=Screen.height;
+		
+	axisx=sw*0.5;
+	axisy=sh*0.5;
+}
+
+function OnGUI ()
+{
+	//====Set Up Frame of Texture====//
+	//====設置貼圖框架====//
+	if(efe>=1)
+	{
+		windowsW=efeW*efe;
+		GUI.Window(0,Rect((axisx-windowsW*0.5),0,windowsW,efeH),EyeForEnemyWindow,"",GUIStyle.none);
+	}
+}
+
+//====Set Up Texture Arrangement====//
+//====設置貼圖排放邏輯====//
+function EyeForEnemyWindow(windowID:int)
+{
+	for(var i=0;i<efe;i++)
+	{
+		GUI.DrawTexture(Rect((windowsW*0.5)-((efeW*0.5)*efe)+efeW*i,0,efeW,efeH),efeTexture,ScaleMode.ScaleToFit,true,1);
+	}
+}
