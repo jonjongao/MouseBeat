@@ -1,0 +1,87 @@
+#pragma strict
+//////Script for GGJ13 by Rosa(rosa89n20@gmail.com)//////
+////////////////////CutsceneAnimation////////////////////
+////////////////aka CustomedFrameAnimation///////////////
+
+//====Get Screen Size====//
+//====獲取螢幕解析度====//
+private var sw:float;
+private var sh:float;
+
+//====Set Button Size====//
+//====設定按鈕長寬====//
+var btnW:float=0.2;
+var btnH:float=0.2;
+
+//====Set Button Axis====//
+//====設定按鈕軸心====//
+var btnAxisX:float=0.75;
+var btnAxisY:float=0.75;
+
+//====Set Button Subtitle====//
+//====設定按鈕字幕====//
+var btnSub:String="Skip";
+
+//====Set Name of Scene====//
+//====設定場景名稱====//
+var mainSceneName:String="MainScene";
+
+//====Current Texture of Array====//
+//====當前陣列貼圖====//
+private var cutscenePic:Texture;
+
+//====FrameDelay====//
+//====貼圖延遲時間====//
+var cutsceneDelay:int=2;
+
+//====Set Texture Array====//
+//====設定貼圖陣列====//
+var picArray=new Texture[15];
+
+//====Start Array Animation====//
+//====開始陣列動畫====//
+function Start () 
+{
+  for(var p=0;p<=picArray.Length-1;p++)
+	{
+		cutscenePic=picArray[p];
+		yield WaitForSeconds(cutsceneDelay);
+		if(p==picArray.Length-1)
+		{
+		LoadLevel();
+		}
+	}
+}
+
+//====Set Get Screen is Update, Set Esc Key for Skip Button====//
+//====設定獲取螢幕解析度為每偵更新, 設定Esc鍵為跳過按鍵====//
+function Update () 
+{
+	sw=Screen.width;
+	sh=Screen.height;
+	
+	if(Input.GetKeyDown(KeyCode.Escape))
+	{
+	LoadLevel();
+	}
+}
+
+//====Rendering Button, Set for Skip Button====//
+//====渲染按鈕, 設定為跳過按鍵====//
+function OnGUI ()
+{
+	GUI.DrawTexture(Rect(0,0,sw,sh),cutscenePic,ScaleMode.StretchToFill,true,0);
+	
+	if(GUI.Button(Rect(sw*btnAxisX,sh*btnAxisY,sw*btnW,sh*btnH),btnSub))
+	{
+		LoadLevel();
+	}
+}
+
+//====Load Level Function====//
+//====讀取關卡====//
+function LoadLevel ()
+{
+	Application.LoadLevel(mainSceneName);
+	Debug.Log("Load Level!");
+}
